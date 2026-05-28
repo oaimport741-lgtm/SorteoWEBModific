@@ -44,6 +44,7 @@ body{
   color:var(--ink);
   line-height:1.6;
   overflow-x:hidden;
+  padding-top:82px;
 }
 
 button,
@@ -74,7 +75,6 @@ select{
   pointer-events:none;
 }
 
-.page-home > header,
 .page-home > section,
 .page-home > div{
   position:relative;
@@ -95,8 +95,10 @@ a{
 }
 
 header{
-  position:sticky;
+  position:fixed;
   top:0;
+  left:0;
+  right:0;
   z-index:1000;
   background:rgba(255,255,255,0.92);
   backdrop-filter:blur(16px);
@@ -109,9 +111,9 @@ header{
   margin:auto;
   padding:14px 20px;
   display:grid;
-  grid-template-columns:auto 1fr auto;
+  grid-template-columns:auto auto 1fr;
   align-items:center;
-  gap:18px;
+  gap:16px;
   position:relative;
 }
 
@@ -132,7 +134,7 @@ header{
 .logo-area{
   display:flex;
   align-items:center;
-  justify-content:center;
+  justify-content:flex-start;
 }
 
 .logo{
@@ -141,16 +143,19 @@ header{
 }
 
 .btn-bases{
+  justify-self:start;
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  min-height:46px;
-  padding:12px 18px;
-  border-radius:16px;
+  width:auto;
+  min-height:42px;
+  padding:10px 16px;
+  border-radius:14px;
   background:var(--ink);
   color:#fff;
   text-decoration:none;
   font-family:var(--font-readable);
+  font-size:0.9rem;
   font-weight:400;
   white-space:nowrap;
   box-shadow:var(--shadow-soft);
@@ -210,7 +215,7 @@ nav a[href="index.html#formulario"]:hover{
 .hero{
   position:relative;
   min-height:auto;
-  padding:42px 20px 34px;
+  padding:0 20px 34px;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -236,6 +241,33 @@ nav a[href="index.html#formulario"]:hover{
   box-shadow:none;
   backdrop-filter:none;
   text-align:center;
+}
+
+.hero-cta{
+  position:absolute;
+  left:50%;
+  top:64%;
+  z-index:2;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:64px;
+  padding:16px 46px;
+  border-radius:20px;
+  background:var(--brand-red);
+  color:#fff;
+  font-family:var(--font-title);
+  font-size:clamp(1.25rem,2.4vw,2rem);
+  line-height:1;
+  text-decoration:none;
+  box-shadow:0 22px 42px rgba(217,31,38,0.28);
+  transform:translate(-50%,-50%);
+  transition:transform 0.2s ease, background 0.2s ease;
+}
+
+.hero-cta:hover{
+  background:var(--brand-red-dark);
+  transform:translate(-50%,-52%);
 }
 
 .hero-banner{
@@ -1203,7 +1235,12 @@ button[type="submit"]:hover{
 }
 
 @media (max-width:840px){
+  body{
+    padding-top:70px;
+  }
+
   .nav{
+    grid-template-columns:auto 1fr auto;
     padding:12px 16px;
     gap:12px;
   }
@@ -1216,7 +1253,12 @@ button[type="submit"]:hover{
     height:44px;
   }
 
+  .logo-area{
+    justify-content:center;
+  }
+
   .btn-bases{
+    justify-self:end;
     min-height:44px;
     padding:10px 14px;
     border-radius:14px;
@@ -1229,6 +1271,7 @@ button[type="submit"]:hover{
     top:calc(100% + 10px);
     left:16px;
     right:16px;
+    z-index:1200;
     padding:10px;
     background:#fff;
     border:1px solid var(--line);
@@ -1251,12 +1294,21 @@ button[type="submit"]:hover{
 
   .hero{
     min-height:auto;
-    padding:28px 16px 32px;
+    padding:0 0 32px;
   }
 
   .hero-box{
     padding:0;
     border-radius:0;
+    width:100%;
+  }
+
+  .hero-cta{
+    top:64%;
+    min-height:52px;
+    padding:13px 34px;
+    border-radius:16px;
+    font-size:1.25rem;
   }
 
   .section,
@@ -1343,6 +1395,10 @@ button[type="submit"]:hover{
 }
 
 @media (max-width:560px){
+  body{
+    padding-top:62px;
+  }
+
   .nav{
     padding:10px 12px;
   }
@@ -1358,17 +1414,29 @@ button[type="submit"]:hover{
   }
 
   .btn-bases{
-    padding:10px 12px;
-    font-size:0.84rem;
+    min-height:40px;
+    padding:9px 12px;
+    border-radius:12px;
+    font-size:0.78rem;
   }
 
   .hero{
-    padding:20px 10px 26px;
+    padding:0 0 26px;
   }
 
   .hero-box{
     padding:0;
     border-radius:0;
+    width:100%;
+  }
+
+  .hero-cta{
+    top:64%;
+    min-height:42px;
+    padding:10px 24px;
+    border-radius:14px;
+    font-size:0.95rem;
+    box-shadow:0 16px 30px rgba(217,31,38,0.25);
   }
 
   .section{

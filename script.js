@@ -499,7 +499,7 @@ function setupFlyersRail() {
   };
 
   const tick = () => {
-    flyersRail.scrollLeft -= 0.45;
+    flyersRail.scrollLeft += 0.45;
     normalizeFlyersScroll();
 
     flyersAutoScrollId = window.requestAnimationFrame(tick);
