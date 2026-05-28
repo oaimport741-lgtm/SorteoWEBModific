@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contacto | OA Import</title>
+<link rel="icon" href="favicon.ico?v=6" sizes="any">
+<link rel="shortcut icon" href="favicon.ico?v=6" type="image/x-icon">
+<link rel="stylesheet" href="styles.css?v=15">
+</head>
+<body class="page-contact">
+
+<header>
+<div class="nav">
+<button class="menu-toggle" id="menuToggle" aria-label="Abrir menú" aria-controls="menu" aria-expanded="false">&#9776;</button>
+
+<div class="logo-area">
+<a href="index.html" aria-label="Volver al inicio del sorteo">
+<img src="logo.png" class="logo" alt="Logo de OA Import">
+</a>
+</div>
+
+<a href="index.html#formulario" class="btn-bases">Volver al sorteo</a>
+
+<nav id="menu" aria-label="Principal">
+<a href="index.html#inicio">Quiénes somos</a>
+<a href="contacto.html" class="is-current" aria-current="page">Contacto</a>
+<a href="https://www.oaimport.com.py/" target="_blank" rel="noopener noreferrer">Nuestro Blog</a>
+<a href="index.html#formulario">Participar</a>
+</nav>
+</div>
+</header>
+
+<section class="section contact-section">
+<div class="contact-shell">
+<div class="contact-main">
+<div class="contact-panel">
+<p class="legal-kicker">Atención y ayuda</p>
+<h1>Contacto</h1>
+<p class="section-copy contact-copy">
+Describe tu duda o inconveniente y nos pondremos en contacto contigo lo antes posible.
+</p>
+
+<form id="contactoForm" class="contact-form" novalidate>
+<div class="contact-form__row">
+<div class="contact-field">
+<label for="contactoNombre" class="contact-label">Nombre</label>
+<input id="contactoNombre" name="contactoNombre" class="contact-input" type="text" placeholder="Tu nombre" autocomplete="name" required>
+</div>
+
+<div class="contact-field">
+<label for="contactoTelefono" class="contact-label">Nro de teléfono</label>
+<input id="contactoTelefono" name="contactoTelefono" class="contact-input" type="text" placeholder="0981-123-123" inputmode="numeric" maxlength="12" autocomplete="tel" required>
+</div>
+</div>
+
+<div class="contact-field">
+<label for="contactoInconveniente" class="contact-label">Describe tu duda/inconveniente</label>
+<textarea id="contactoInconveniente" name="contactoInconveniente" class="contact-textarea" placeholder="Contanos en qué podemos ayudarte." rows="3" required></textarea>
+</div>
+
+<div class="contact-form__footer">
+<button type="submit" class="contact-submit">Enviar consulta</button>
+<p class="contact-form__note">Te abriremos WhatsApp con tu mensaje listo para enviar.</p>
+</div>
+
+<p id="contactoEstado" class="contact-status" aria-live="polite"></p>
+</form>
+</div>
+
+<div class="contact-grid">
+<a href="https://api.whatsapp.com/send?phone=+595983734147&text=%C2%A1Hola%20OA%20Import!%20Les%20escribo%20desde%20la%20web%20" class="contact-card contact-card--compact" target="_blank" rel="noopener noreferrer" aria-label="Abrir WhatsApp de OA Import">
+<div class="contact-card__icon" aria-hidden="true">
+<img src="whatsapp%20logo.png" alt="">
+</div>
+<h2>WhatsApp</h2>
+</a>
+
+<a href="https://www.facebook.com/oa.import.py" class="contact-card contact-card--compact" target="_blank" rel="noopener noreferrer" aria-label="Abrir Facebook de OA Import">
+<div class="contact-card__icon" aria-hidden="true">
+<img src="facebook%20logo.png" alt="">
+</div>
+<h2>Facebook</h2>
+</a>
+
+<a href="https://www.instagram.com/oa.import" class="contact-card contact-card--compact" target="_blank" rel="noopener noreferrer" aria-label="Abrir Instagram de OA Import">
+<div class="contact-card__icon" aria-hidden="true">
+<img src="instagram%20logo.png" alt="">
+</div>
+<h2>Instagram</h2>
+</a>
+
+<a href="tel:+595983734147" class="contact-card contact-card--compact" aria-label="Llamar a OA Import">
+<div class="contact-card__icon" aria-hidden="true">
+<img src="telefono%20logo.png" alt="">
+</div>
+<h2>Teléfono</h2>
+</a>
+</div>
+</div>
+
+<aside class="contact-side">
+<div class="contact-side__card">
+<div class="contact-side__eyebrow">Atención directa</div>
+<h2>¿Necesitás ayuda?</h2>
+<p>
+Nuestro equipo puede asistirte con dudas sobre participación, comprobantes, códigos de producto
+o cualquier inconveniente durante el registro.
+</p>
+<a href="https://api.whatsapp.com/send?phone=+595983734147&text=%C2%A1Hola%20OA%20Import!%20Les%20escribo%20desde%20la%20web%20" class="contact-side__action" target="_blank" rel="noopener noreferrer">
+Hablar por WhatsApp
+</a>
+</div>
+
+<div class="contact-side__card contact-side__card--soft">
+<div class="contact-side__eyebrow">Línea de contacto</div>
+<p class="contact-side__phone">(0983) 734 147</p>
+<p>También podés llamarnos o escribirnos por nuestras redes oficiales.</p>
+</div>
+
+<article class="contact-card contact-card--map contact-card--map-inline">
+<div class="contact-card__header">
+<div class="contact-card__icon" aria-hidden="true">
+<img src="google%20maps%20logo.png" alt="">
+</div>
+<div>
+<h2>Ubicación</h2>
+<p>OA Import S.A.</p>
+</div>
+</div>
+<div class="contact-map">
+<iframe
+  src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d26126.208638930497!2d-57.53061!3d-25.243659!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x945da5bf459cd859%3A0x895ba51aed837e69!2sOA%20Import%20S.A.!5e1!3m2!1ses-419!2spy!4v1775583479672!5m2!1ses-419!2spy"
+  loading="lazy"
+  allowfullscreen
+  referrerpolicy="no-referrer-when-downgrade"
+  title="Ubicación de OA Import">
+</iframe>
+</div>
+<a href="https://www.google.com/maps?ll=-25.243659,-57.53061&z=14&t=m&hl=es-419&gl=PY&mapclient=embed&cid=9897686141149347433" class="contact-card__link contact-card__link--inline" target="_blank" rel="noopener noreferrer">
+Abrir en Google Maps
+</a>
+</article>
+</aside>
+</div>
+</section>
+
+<script src="script.js?v=3"></script>
+</body>
+</html>
