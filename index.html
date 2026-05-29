@@ -6,7 +6,7 @@
 <title>OA Import - Sorteo</title>
 <link rel="icon" href="favicon.ico?v=6" sizes="any">
 <link rel="shortcut icon" href="favicon.ico?v=6" type="image/x-icon">
-<link rel="stylesheet" href="styles.css?v=17">
+<link rel="stylesheet" href="styles.css?v=21">
 </head>
 <body class="page-home">
 
@@ -72,64 +72,64 @@
 
 <div class="locales-grid">
 <div class="local-logo-slot">
-<img src="" data-logo-file="local-adherido-1.png" alt="Local adherido 1">
+<img src="local-adherido-1.png" data-logo-index="1" alt="Local adherido 1" loading="lazy">
 </div>
 <div class="local-logo-slot">
-<img src="" data-logo-file="local-adherido-2.png" alt="Local adherido 2">
+<img src="local-adherido-2.png" data-logo-index="2" alt="Local adherido 2" loading="lazy">
 </div>
 <div class="local-logo-slot">
-<img src="" data-logo-file="local-adherido-3.png" alt="Local adherido 3">
+<img src="local-adherido-3.png" data-logo-index="3" alt="Local adherido 3" loading="lazy">
 </div>
 <div class="local-logo-slot">
-<img src="" data-logo-file="local-adherido-4.png" alt="Local adherido 4">
+<img src="local-adherido-4.png" data-logo-index="4" alt="Local adherido 4" loading="lazy">
 </div>
 <div class="local-logo-slot">
-<img src="" data-logo-file="local-adherido-5.png" alt="Local adherido 5">
+<img src="local-adherido-5.png" data-logo-index="5" alt="Local adherido 5" loading="lazy">
 </div>
 <div class="local-logo-slot">
-<img src="" data-logo-file="local-adherido-6.png" alt="Local adherido 6">
+<img src="local-adherido-6.png" data-logo-index="6" alt="Local adherido 6" loading="lazy">
 </div>
 <div class="local-logo-slot">
-<img src="" data-logo-file="local-adherido-7.png" alt="Local adherido 7">
+<img src="local-adherido-7.png" data-logo-index="7" alt="Local adherido 7" loading="lazy">
 </div>
 <div class="local-logo-slot">
-<img src="" data-logo-file="local-adherido-8.png" alt="Local adherido 8">
+<img src="local-adherido-8.png" data-logo-index="8" alt="Local adherido 8" loading="lazy">
 </div>
 <div class="local-logo-slot">
-<img src="" data-logo-file="local-adherido-9.png" alt="Local adherido 9">
+<img src="local-adherido-9.png" data-logo-index="9" alt="Local adherido 9" loading="lazy">
 </div>
 <div class="local-logo-slot">
-<img src="" data-logo-file="local-adherido-10.png" alt="Local adherido 10">
+<img src="local-adherido-10.png" data-logo-index="10" alt="Local adherido 10" loading="lazy">
 </div>
 <div class="local-logo-slot">
-<img src="" data-logo-file="local-adherido-11.png" alt="Local adherido 11">
+<img src="local-adherido-11.png" data-logo-index="11" alt="Local adherido 11" loading="lazy">
 </div>
 <div class="local-logo-slot">
-<img src="" data-logo-file="local-adherido-12.png" alt="Local adherido 12">
+<img src="local-adherido-12.png" data-logo-index="12" alt="Local adherido 12" loading="lazy">
 </div>
 <div class="local-logo-slot">
-<img src="" data-logo-file="local-adherido-13.png" alt="Local adherido 13">
+<img src="local-adherido-13.png" data-logo-index="13" alt="Local adherido 13" loading="lazy">
 </div>
 <div class="local-logo-slot">
-<img src="" data-logo-file="local-adherido-14.png" alt="Local adherido 14">
+<img src="local-adherido-14.png" data-logo-index="14" alt="Local adherido 14" loading="lazy">
 </div>
 <div class="local-logo-slot">
-<img src="" data-logo-file="local-adherido-15.png" alt="Local adherido 15">
+<img src="local-adherido-15.png" data-logo-index="15" alt="Local adherido 15" loading="lazy">
 </div>
 <div class="local-logo-slot">
-<img src="" data-logo-file="local-adherido-16.png" alt="Local adherido 16">
+<img src="local-adherido-16.png" data-logo-index="16" alt="Local adherido 16" loading="lazy">
 </div>
 <div class="local-logo-slot">
-<img src="" data-logo-file="local-adherido-17.png" alt="Local adherido 17">
+<img src="local-adherido-17.png" data-logo-index="17" alt="Local adherido 17" loading="lazy">
 </div>
 <div class="local-logo-slot">
-<img src="" data-logo-file="local-adherido-18.png" alt="Local adherido 18">
+<img src="local-adherido-18.png" data-logo-index="18" alt="Local adherido 18" loading="lazy">
 </div>
 <div class="local-logo-slot">
-<img src="" data-logo-file="local-adherido-19.png" alt="Local adherido 19">
+<img src="local-adherido-19.png" data-logo-index="19" alt="Local adherido 19" loading="lazy">
 </div>
 <div class="local-logo-slot">
-<img src="" data-logo-file="local-adherido-20.png" alt="Local adherido 20">
+<img src="local-adherido-20.png" data-logo-index="20" alt="Local adherido 20" loading="lazy">
 </div>
 </div>
 </section>
@@ -146,7 +146,16 @@
 
 <div class="fila">
 <input type="text" name="factura" placeholder="Ingresa los últimos 7 dígitos del Nro de tu factura" autocomplete="off" inputmode="numeric" maxlength="7" aria-label="Últimos 7 dígitos del número de factura" required>
-<input type="text" name="local_compra" placeholder="Local" autocomplete="organization" autocapitalize="characters" spellcheck="false" aria-label="Nombre del local donde realizó la compra" required>
+<div class="autocomplete-field">
+<input type="text" name="local_compra" placeholder="Local" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Nombre del local donde realizó la compra" required>
+<div id="localSuggestions" class="codigo-suggestions local-suggestions" hidden></div>
+</div>
+</div>
+
+<div class="factura-upload">
+<label for="facturaFoto">Foto de la factura</label>
+<input id="facturaFoto" type="file" name="factura_foto" accept="image/*" capture="environment" aria-label="Foto de la factura" required>
+<span>Subí una imagen clara de la factura para validar tu cupón.</span>
 </div>
 
 <div class="fila" id="codigos"></div>
@@ -173,6 +182,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="script.js?v=4"></script>
+<script src="script.js?v=8"></script>
 </body>
 </html>

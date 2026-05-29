@@ -20,14 +20,20 @@ const cedulaInput = form ? form.querySelector('input[name="cedula"]') : null;
 const nombreInput = form ? form.querySelector('input[name="nombre"]') : null;
 const telefonoInput = form ? form.querySelector('input[name="telefono"]') : null;
 const facturaInput = form ? form.querySelector('input[name="factura"]') : null;
+const facturaFotoInput = form ? form.querySelector('input[name="factura_foto"]') : null;
 const localInput = form ? form.querySelector('input[name="local_compra"]') : null;
+const localSuggestions = document.getElementById("localSuggestions");
 const flyersRail = document.querySelector("[data-flyers-rail]");
 const flyersTrack = document.querySelector("[data-flyers-track]");
+const localLogoImages = Array.from(document.querySelectorAll(".local-logo-slot img"));
 
 let supabaseClient = null;
 let productosPermitidos = [];
 let codigosPermitidos = new Set();
 let productosPermitidosCargados = false;
+let localesAdheridos = [];
+let localesAdheridosPermitidos = new Set();
+let localesAdheridosCargados = false;
 let flyersAutoScrollId = null;
 let flyersIsDragging = false;
 const mainControlKeys = [
@@ -42,6 +48,8 @@ const mainControlKeys = [
   "End"
 ];
 const mainPhonePrefix = "09";
+const facturaStorageBucket = "facturas";
+const facturaMaxFileSize = 8 * 1024 * 1024;
 
 function setMessage(texto, tipo = "") {
   if (!mensaje) {
@@ -107,6 +115,22 @@ function sanitizeMainUppercaseText(value) {
     .toUpperCase();
 }
 
+function sanitizeLocalName(value) {
+  return value
+    .replace(/[^\p{L}\p{N}\s.,&'/-]/gu, "")
+    .replace(/\s{2,}/g, " ")
+    .trimStart()
+    .toUpperCase();
+}
+
+function normalizeSearchText(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
 function formatCedula(value) {
   const digits = value.replace(/\D/g, "").slice(0, 8);
   return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -164,12 +188,26 @@ function getProductoCodigo(row) {
     row?.codigo_barra ??
     row?.["Codigo_barra"] ??
     row?.["codigo_barra"] ??
+    row?.Codigo ??
+    row?.codigo ??
+    row?.["Código"] ??
+    row?.["codigo"] ??
     ""
   ).trim();
 }
 
 function getProductoDescripcion(row) {
   return String(
+    row?.Producto ??
+    row?.producto ??
+    row?.["Producto"] ??
+    row?.["producto"] ??
+    row?.Nombre ??
+    row?.nombre ??
+    row?.["Nombre"] ??
+    row?.["nombre"] ??
+    row?.["Nombre de Producto"] ??
+    row?.["Nombre de producto"] ??
     row?.["Descripción"] ??
     row?.["Descripcion"] ??
     row?.Descripcion ??
@@ -187,6 +225,10 @@ function getProductoEmpresa(row) {
     row?.["empresa"] ??
     ""
   ).trim();
+}
+
+function getProductoNombreVisual(item) {
+  return [item.descripcion, item.empresa].filter(Boolean).join(" - ") || item.codigo;
 }
 
 function buildProductoPermitido(row) {
@@ -239,7 +281,7 @@ async function loadProductosPermitidos() {
     productosPermitidos = rows
       .map(buildProductoPermitido)
       .filter(Boolean)
-      .sort((a, b) => a.codigo.localeCompare(b.codigo));
+      .sort((a, b) => getProductoNombreVisual(a).localeCompare(getProductoNombreVisual(b)));
 
     codigosPermitidos = new Set(productosPermitidos.map((item) => item.codigo));
     productosPermitidosCargados = true;
@@ -252,7 +294,7 @@ async function loadProductosPermitidos() {
 }
 
 function filterProductosPermitidos(query) {
-  const normalized = query.trim();
+  const normalized = normalizeSearchText(query);
 
   if (!normalized || !productosPermitidos.length) {
     return [];
@@ -262,9 +304,19 @@ function filterProductosPermitidos(query) {
   const contains = [];
 
   for (const item of productosPermitidos) {
-    if (item.codigo.startsWith(normalized)) {
+    const nombreVisual = getProductoNombreVisual(item);
+    const searchableParts = [
+      nombreVisual,
+      item.descripcion,
+      item.empresa,
+      item.codigo
+    ].map(normalizeSearchText);
+    const startsWithQuery = searchableParts.some((value) => value.startsWith(normalized));
+    const containsQuery = searchableParts.some((value) => value.includes(normalized));
+
+    if (startsWithQuery) {
       starts.push(item);
-    } else if (item.codigo.includes(normalized)) {
+    } else if (containsQuery) {
       contains.push(item);
     }
 
@@ -285,7 +337,7 @@ function hideCodigoSuggestions(suggestions) {
   suggestions.innerHTML = "";
 }
 
-function renderCodigoSuggestions(input, suggestions) {
+function renderCodigoSuggestions(input, hiddenInput, suggestions) {
   const matches = filterProductosPermitidos(input.value);
 
   if (!matches.length) {
@@ -300,22 +352,25 @@ function renderCodigoSuggestions(input, suggestions) {
     option.type = "button";
     option.className = "codigo-suggestion";
 
-    const code = document.createElement("span");
-    code.className = "codigo-suggestion__code";
-    code.textContent = item.codigo;
+    const name = document.createElement("span");
+    name.className = "codigo-suggestion__code";
+    name.textContent = item.descripcion || item.empresa || "Producto participante";
 
     const meta = document.createElement("span");
     meta.className = "codigo-suggestion__meta";
-    meta.textContent = [item.empresa, item.descripcion].filter(Boolean).join(" | ");
+    meta.textContent = item.descripcion && item.empresa ? item.empresa : "Producto participante";
 
-    option.append(code, meta);
+    option.append(name, meta);
 
     option.addEventListener("mousedown", (event) => {
       event.preventDefault();
     });
 
     option.addEventListener("click", () => {
-      input.value = item.codigo;
+      const nombreVisual = getProductoNombreVisual(item);
+      input.value = nombreVisual;
+      input.dataset.selectedProduct = nombreVisual;
+      hiddenInput.value = item.codigo;
       hideCodigoSuggestions(suggestions);
       input.focus();
     });
@@ -326,14 +381,19 @@ function renderCodigoSuggestions(input, suggestions) {
   suggestions.hidden = false;
 }
 
-function attachCodigoAutocomplete(input, suggestions) {
+function attachCodigoAutocomplete(input, hiddenInput, suggestions) {
   input.addEventListener("input", () => {
+    if (input.value.trim() !== (input.dataset.selectedProduct || "")) {
+      hiddenInput.value = "";
+      delete input.dataset.selectedProduct;
+    }
+
     if (!productosPermitidosCargados) {
       hideCodigoSuggestions(suggestions);
       return;
     }
 
-    renderCodigoSuggestions(input, suggestions);
+    renderCodigoSuggestions(input, hiddenInput, suggestions);
   });
 
   input.addEventListener("focus", () => {
@@ -341,12 +401,203 @@ function attachCodigoAutocomplete(input, suggestions) {
       return;
     }
 
-    renderCodigoSuggestions(input, suggestions);
+    renderCodigoSuggestions(input, hiddenInput, suggestions);
   });
 
   input.addEventListener("blur", () => {
     window.setTimeout(() => {
       hideCodigoSuggestions(suggestions);
+    }, 120);
+  });
+}
+
+function getLocalNombre(row) {
+  return String(
+    row?.Nombre ??
+    row?.nombre ??
+    row?.Local ??
+    row?.local ??
+    row?.["Nombre"] ??
+    row?.["nombre"] ??
+    row?.["Local"] ??
+    row?.["local"] ??
+    row?.["Nombre del Local"] ??
+    row?.["Nombre del local"] ??
+    row?.["Local Adherido"] ??
+    row?.["local_adherido"] ??
+    ""
+  ).trim();
+}
+
+function buildLocalAdherido(row) {
+  const activo = row?.Activo ?? row?.activo ?? row?.["Activo"] ?? row?.["activo"];
+
+  if (activo === false) {
+    return null;
+  }
+
+  const nombre = sanitizeLocalName(getLocalNombre(row));
+
+  if (!nombre) {
+    return null;
+  }
+
+  return { nombre };
+}
+
+async function loadLocalesAdheridos() {
+  if (!supabaseClient) {
+    return;
+  }
+
+  try {
+    let from = 0;
+    const size = 1000;
+    const rows = [];
+
+    while (true) {
+      const { data, error } = await supabaseClient
+        .from("Locales Adheridos")
+        .select("*")
+        .range(from, from + size - 1);
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data || !data.length) {
+        break;
+      }
+
+      rows.push(...data);
+
+      if (data.length < size) {
+        break;
+      }
+
+      from += size;
+    }
+
+    const uniqueLocales = new Map();
+
+    rows
+      .map(buildLocalAdherido)
+      .filter(Boolean)
+      .forEach((item) => {
+        uniqueLocales.set(normalizeSearchText(item.nombre), item);
+      });
+
+    localesAdheridos = Array.from(uniqueLocales.values()).sort((a, b) => a.nombre.localeCompare(b.nombre));
+    localesAdheridosPermitidos = new Set(localesAdheridos.map((item) => normalizeSearchText(item.nombre)));
+    localesAdheridosCargados = true;
+  } catch (error) {
+    console.error("Error al cargar locales adheridos:", error);
+    localesAdheridos = [];
+    localesAdheridosPermitidos = new Set();
+    localesAdheridosCargados = false;
+  }
+}
+
+function filterLocalesAdheridos(query) {
+  const normalized = normalizeSearchText(query);
+
+  if (!normalized || !localesAdheridos.length) {
+    return [];
+  }
+
+  const starts = [];
+  const contains = [];
+
+  for (const item of localesAdheridos) {
+    const nombre = normalizeSearchText(item.nombre);
+
+    if (nombre.startsWith(normalized)) {
+      starts.push(item);
+    } else if (nombre.includes(normalized)) {
+      contains.push(item);
+    }
+
+    if (starts.length + contains.length >= 8) {
+      break;
+    }
+  }
+
+  return [...starts, ...contains].slice(0, 8);
+}
+
+function renderLocalSuggestions() {
+  if (!localInput || !localSuggestions) {
+    return;
+  }
+
+  const matches = filterLocalesAdheridos(localInput.value);
+
+  if (!matches.length) {
+    hideCodigoSuggestions(localSuggestions);
+    return;
+  }
+
+  localSuggestions.innerHTML = "";
+
+  matches.forEach((item) => {
+    const option = document.createElement("button");
+    option.type = "button";
+    option.className = "codigo-suggestion";
+
+    const name = document.createElement("span");
+    name.className = "codigo-suggestion__code";
+    name.textContent = item.nombre;
+
+    option.append(name);
+
+    option.addEventListener("mousedown", (event) => {
+      event.preventDefault();
+    });
+
+    option.addEventListener("click", () => {
+      localInput.value = item.nombre;
+      localInput.dataset.selectedLocal = item.nombre;
+      hideCodigoSuggestions(localSuggestions);
+      localInput.focus();
+    });
+
+    localSuggestions.appendChild(option);
+  });
+
+  localSuggestions.hidden = false;
+}
+
+function attachLocalAutocomplete() {
+  if (!localInput || !localSuggestions) {
+    return;
+  }
+
+  localInput.addEventListener("input", () => {
+    localInput.value = sanitizeLocalName(localInput.value);
+
+    if (localInput.value.trim() !== (localInput.dataset.selectedLocal || "")) {
+      delete localInput.dataset.selectedLocal;
+    }
+
+    if (!localesAdheridosCargados) {
+      hideCodigoSuggestions(localSuggestions);
+      return;
+    }
+
+    renderLocalSuggestions();
+  });
+
+  localInput.addEventListener("focus", () => {
+    if (!localesAdheridosCargados || !localInput.value.trim()) {
+      return;
+    }
+
+    renderLocalSuggestions();
+  });
+
+  localInput.addEventListener("blur", () => {
+    window.setTimeout(() => {
+      hideCodigoSuggestions(localSuggestions);
     }, 120);
   });
 }
@@ -363,13 +614,16 @@ function createCodigoField(value = "") {
 
   const input = document.createElement("input");
   input.type = "text";
-  input.name = "codigo[]";
-  input.placeholder = "Código de barras del producto";
+  input.name = "producto[]";
+  input.placeholder = "Producto comprado";
   input.autocomplete = "off";
-  input.inputMode = "numeric";
-  input.setAttribute("aria-label", "Código de barras del producto");
+  input.setAttribute("aria-label", "Producto comprado");
   input.required = true;
-  input.value = value;
+
+  const hiddenCodigoInput = document.createElement("input");
+  hiddenCodigoInput.type = "hidden";
+  hiddenCodigoInput.name = "codigo[]";
+  hiddenCodigoInput.value = value;
 
   const qtyInput = document.createElement("input");
   qtyInput.type = "text";
@@ -404,8 +658,8 @@ function createCodigoField(value = "") {
     qtyInput.value = formatCantidad(qtyInput.value);
   });
 
-  attachCodigoAutocomplete(input, suggestions);
-  main.append(input, suggestions);
+  attachCodigoAutocomplete(input, hiddenCodigoInput, suggestions);
+  main.append(input, hiddenCodigoInput, suggestions);
   entry.append(main, qtyInput);
   wrapper.append(entry);
   return wrapper;
@@ -442,6 +696,130 @@ function formatContactPhone(value) {
   }
 
   return `${first}-${second}-${third}`;
+}
+
+function sanitizeStorageFileName(value) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase();
+}
+
+function getFacturaFotoError(file) {
+  if (!file) {
+    return "Subí la foto de la factura.";
+  }
+
+  const type = file.type || "";
+  const extension = file.name.split(".").pop()?.toLowerCase() || "";
+  const validExtension = ["jpg", "jpeg", "png", "webp", "heic", "heif"].includes(extension);
+
+  if (!type.startsWith("image/") && !validExtension) {
+    return "La foto de la factura debe ser una imagen.";
+  }
+
+  if (file.size > facturaMaxFileSize) {
+    return "La foto de la factura no puede superar 8 MB.";
+  }
+
+  return "";
+}
+
+async function uploadFacturaFoto(file, { cedula, factura }) {
+  const cedulaLimpia = cedula.replace(/\D/g, "") || "sin-cedula";
+  const facturaLimpia = factura.replace(/\D/g, "") || "sin-factura";
+  const extension = sanitizeStorageFileName(file.name.split(".").pop() || "jpg") || "jpg";
+  const baseName = sanitizeStorageFileName(file.name.replace(/\.[^.]+$/, "")) || "factura";
+  const contentType = file.type || (extension === "jpg" ? "image/jpeg" : `image/${extension}`);
+  const uniquePart = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  const path = `${cedulaLimpia}/${facturaLimpia}-${uniquePart}-${baseName}.${extension}`;
+
+  const { data, error } = await supabaseClient.storage
+    .from(facturaStorageBucket)
+    .upload(path, file, {
+      cacheControl: "31536000",
+      contentType,
+      upsert: false
+    });
+
+  if (error) {
+    throw error;
+  }
+
+  return data.path;
+}
+
+function setupLocalLogos() {
+  if (!localLogoImages.length) {
+    return;
+  }
+
+  const extensions = ["png", "webp", "jpg", "jpeg", "svg"];
+
+  localLogoImages.forEach((img, index) => {
+    const slot = img.closest(".local-logo-slot");
+    const logoIndex = img.dataset.logoIndex || String(index + 1);
+    const explicitSrc = img.getAttribute("src") || "";
+    const candidates = [
+      explicitSrc,
+      ...extensions.map((extension) => `local-adherido-${logoIndex}.${extension}`),
+      ...extensions.map((extension) => `local${logoIndex}.${extension}`)
+    ].filter((candidate, candidateIndex, list) => candidate && list.indexOf(candidate) === candidateIndex);
+
+    let nextCandidateIndex = explicitSrc ? 1 : 0;
+
+    const hideSlot = () => {
+      if (slot) {
+        slot.hidden = true;
+        slot.classList.remove("is-loaded");
+      }
+    };
+
+    const showSlot = () => {
+      if (slot) {
+        slot.hidden = false;
+        slot.classList.add("is-loaded");
+      }
+    };
+
+    const tryNextCandidate = () => {
+      const candidate = candidates[nextCandidateIndex];
+      nextCandidateIndex += 1;
+
+      if (!candidate) {
+        hideSlot();
+        return;
+      }
+
+      if (slot) {
+        slot.hidden = false;
+        slot.classList.remove("is-loaded");
+      }
+
+      img.src = candidate;
+    };
+
+    img.addEventListener("load", () => {
+      if (img.naturalWidth > 0) {
+        showSlot();
+      } else {
+        tryNextCandidate();
+      }
+    });
+
+    img.addEventListener("error", tryNextCandidate);
+
+    if (img.complete) {
+      if (img.naturalWidth > 0) {
+        showSlot();
+      } else {
+        tryNextCandidate();
+      }
+    }
+  });
 }
 
 function setupFlyersRail() {
@@ -566,6 +944,7 @@ if (form) {
     });
 
     loadProductosPermitidos();
+    loadLocalesAdheridos();
   } catch (error) {
     console.error("Error al iniciar Supabase:", error);
     setMessage("No se pudo iniciar la conexión con Supabase.", "error");
@@ -630,14 +1009,11 @@ if (nombreInput) {
   });
 }
 
-if (localInput) {
-  localInput.addEventListener("input", () => {
-    localInput.value = sanitizeMainUppercaseText(localInput.value);
-  });
-}
+attachLocalAutocomplete();
 
 initializeMainTicketFields();
 resetCodigoFields();
+setupLocalLogos();
 setupFlyersRail();
 
 if (agregarBtn && contenedorCodigos) {
@@ -659,7 +1035,8 @@ if (form) {
     const nombre = sanitizeMainUppercaseText(form.nombre.value.trim());
     const telefono = formatMainPhone(form.telefono.value.trim());
     const factura = formatFactura(form.factura.value.trim());
-    const local_compra = sanitizeMainUppercaseText(form.local_compra.value.trim());
+    const facturaFoto = facturaFotoInput ? facturaFotoInput.files[0] : null;
+    const local_compra = sanitizeLocalName(form.local_compra.value.trim());
     const cedulaNumero = Number(cedula.replace(/\D/g, ""));
 
     form.cedula.value = cedula;
@@ -698,6 +1075,30 @@ if (form) {
       return;
     }
 
+    if (!localesAdheridosCargados) {
+      setMessage("No se pudo cargar la lista de locales adheridos.", "error");
+      form.local_compra.focus();
+      return;
+    }
+
+    if (!localesAdheridosPermitidos.has(normalizeSearchText(local_compra))) {
+      setMessage("Selecciona un local de la lista.", "error");
+      form.local_compra.focus();
+      return;
+    }
+
+    const facturaFotoError = getFacturaFotoError(facturaFoto);
+
+    if (facturaFotoError) {
+      setMessage(facturaFotoError, "error");
+
+      if (facturaFotoInput) {
+        facturaFotoInput.focus();
+      }
+
+      return;
+    }
+
     if (!productosPermitidosCargados) {
       setMessage("No se pudo cargar la lista de productos permitidos.", "error");
       return;
@@ -706,20 +1107,22 @@ if (form) {
     const codigoRows = Array.from(document.querySelectorAll(".codigo-field"))
       .map((row) => {
         const codigoInput = row.querySelector('input[name="codigo[]"]');
+        const productoInput = row.querySelector('input[name="producto[]"]');
         const cantidadInput = row.querySelector('input[name="cantidad[]"]');
         const codigo = codigoInput ? codigoInput.value.trim() : "";
+        const producto = productoInput ? productoInput.value.trim() : "";
         const cantidad = cantidadInput ? Number(formatCantidad(cantidadInput.value)) : 1;
 
         if (cantidadInput) {
           cantidadInput.value = String(cantidad);
         }
 
-        return { row, codigoInput, cantidadInput, codigo, cantidad };
+        return { row, codigoInput, productoInput, cantidadInput, codigo, producto, cantidad };
       })
-      .filter((item) => item.codigo);
+      .filter((item) => item.codigo || item.producto);
 
     if (!codigoRows.length) {
-      setMessage("Agrega al menos un código válido.", "error");
+      setMessage("Agrega al menos un producto válido.", "error");
       return;
     }
 
@@ -735,33 +1138,40 @@ if (form) {
       return;
     }
 
-    const codigoNoPermitido = codigoRows.find((item) => !codigosPermitidos.has(item.codigo));
+    const codigoNoPermitido = codigoRows.find((item) => !item.codigo || !codigosPermitidos.has(item.codigo));
 
     if (codigoNoPermitido) {
-      setMessage(`El código ${codigoNoPermitido.codigo} no está habilitado para el sorteo.`, "error");
+      setMessage("Selecciona un producto de la lista.", "error");
 
-      if (codigoNoPermitido.codigoInput) {
-        codigoNoPermitido.codigoInput.focus();
+      if (codigoNoPermitido.productoInput) {
+        codigoNoPermitido.productoInput.focus();
       }
 
       return;
     }
 
-    const registros = codigoRows.flatMap(({ codigo, cantidad }) =>
-      Array.from({ length: cantidad }, () => ({
-        cedula,
-        nombre,
-        telefono,
-        factura,
-        local_compra,
-        codigo
-      }))
-    );
-
     setLoadingState(true);
-    setMessage("");
+    setMessage("Subiendo foto de la factura...");
+
+    let facturaFotoPath = "";
 
     try {
+      facturaFotoPath = await uploadFacturaFoto(facturaFoto, { cedula, factura });
+
+      const registros = codigoRows.flatMap(({ codigo, cantidad }) =>
+        Array.from({ length: cantidad }, () => ({
+          cedula,
+          nombre,
+          telefono,
+          factura,
+          local_compra,
+          codigo,
+          factura_foto_path: facturaFotoPath
+        }))
+      );
+
+      setMessage("Guardando cupón...");
+
       const { error } = await supabaseClient.from("participantes").insert(registros);
 
       if (error) {
@@ -776,6 +1186,15 @@ if (form) {
     } catch (error) {
       const detalle = error && error.message ? error.message : "desconocido";
       console.error("Error de Supabase:", error);
+
+      if (facturaFotoPath) {
+        try {
+          await supabaseClient.storage.from(facturaStorageBucket).remove([facturaFotoPath]);
+        } catch (removeError) {
+          console.warn("No se pudo eliminar la foto de factura luego del error:", removeError);
+        }
+      }
+
       setMessage(`Error al guardar: ${detalle}`, "error");
     } finally {
       setLoadingState(false);

@@ -402,10 +402,60 @@ nav a[href="index.html#formulario"]:hover{
   gap:14px;
 }
 
+.autocomplete-field{
+  position:relative;
+  flex:1;
+  min-width:0;
+}
+
 #codigos{
   display:flex;
   flex-direction:column;
   gap:12px;
+}
+
+.factura-upload{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  padding:16px 18px;
+  border:1px dashed rgba(126,65,145,0.42);
+  border-radius:18px;
+  background:rgba(255,255,255,0.72);
+}
+
+.factura-upload label{
+  color:var(--title-fill);
+  font-family:var(--font-title);
+  font-size:1.05rem;
+  line-height:1.1;
+}
+
+.factura-upload input{
+  min-height:auto !important;
+  padding:0 !important;
+  border:none !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+
+.factura-upload input::file-selector-button{
+  min-height:42px;
+  margin-right:12px;
+  padding:10px 16px;
+  border:none;
+  border-radius:12px;
+  background:var(--ink);
+  color:#fff;
+  font-family:var(--font-readable);
+  cursor:pointer;
+}
+
+.factura-upload span{
+  color:var(--muted);
+  font-size:0.9rem;
+  line-height:1.35;
 }
 
 .codigo-field{
@@ -420,6 +470,7 @@ nav a[href="index.html#formulario"]:hover{
 }
 
 .codigo-entry .codigo-field__main{
+  position:relative;
   flex:1;
 }
 
@@ -616,14 +667,16 @@ button[type="submit"]:hover{
   max-width:104px;
   max-height:54px;
   object-fit:contain;
+  opacity:0;
+  transition:opacity 0.2s ease;
 }
 
-.local-logo-slot img[src=""]{
+.local-logo-slot[hidden]{
   display:none;
 }
 
-.local-logo-slot:has(img[src=""]){
-  display:none;
+.local-logo-slot.is-loaded img{
+  opacity:1;
 }
 
 .final-banner-section{
@@ -707,6 +760,8 @@ button[type="submit"]:hover{
 
 .page-bases .legal-card h1{
   color:var(--brand-red);
+  font-size:clamp(2rem,3.4vw,2.95rem);
+  line-height:1.06;
   text-transform:uppercase;
 }
 
@@ -1545,6 +1600,10 @@ button[type="submit"]:hover{
   .legal-card{
     padding:28px 18px;
     border-radius:24px;
+  }
+
+  .page-bases .legal-card h1{
+    font-size:clamp(1.65rem,8vw,2.25rem);
   }
 
   .legal-subtitle{
