@@ -36,6 +36,7 @@ let localesAdheridosPermitidos = new Set();
 let localesAdheridosCargados = false;
 let flyersAutoScrollId = null;
 let flyersIsDragging = false;
+let successModalTimer = null;
 const mainControlKeys = [
   "Backspace",
   "Delete",
@@ -92,14 +93,24 @@ function openSuccessModal() {
     return;
   }
 
+  if (successModalTimer !== null) {
+    window.clearTimeout(successModalTimer);
+  }
+
   successModal.hidden = false;
   successModal.setAttribute("aria-hidden", "false");
-  document.body.classList.add("modal-open");
+  document.body.classList.remove("modal-open");
+  successModalTimer = window.setTimeout(closeSuccessModal, 7000);
 }
 
 function closeSuccessModal() {
   if (!successModal) {
     return;
+  }
+
+  if (successModalTimer !== null) {
+    window.clearTimeout(successModalTimer);
+    successModalTimer = null;
   }
 
   successModal.hidden = true;
@@ -151,8 +162,16 @@ function formatCantidad(value) {
   return String(cantidad);
 }
 
-function formatMainPhone(value) {
+function formatCantidadEditable(value) {
+  return value.replace(/\D/g, "").slice(0, 3);
+}
+
+function formatMainPhone(value, seedPrefix = false) {
   let digits = value.replace(/\D/g, "");
+
+  if (!digits) {
+    return seedPrefix ? mainPhonePrefix : "";
+  }
 
   if (digits.startsWith(mainPhonePrefix)) {
     digits = digits.slice(2);
@@ -177,7 +196,7 @@ function formatMainPhone(value) {
 }
 
 function initializeMainTicketFields() {
-  if (telefonoInput) {
+  if (telefonoInput && telefonoInput.value.trim()) {
     telefonoInput.value = formatMainPhone(telefonoInput.value);
   }
 }
@@ -640,6 +659,16 @@ function createCodigoField(value = "") {
   suggestions.className = "codigo-suggestions";
   suggestions.hidden = true;
 
+  const clearDefaultQty = () => {
+    if (qtyInput.value === "1") {
+      qtyInput.value = "";
+    }
+  };
+
+  const restoreDefaultQty = () => {
+    qtyInput.value = formatCantidad(qtyInput.value);
+  };
+
   qtyInput.addEventListener("keydown", (event) => {
     if (event.ctrlKey || event.metaKey || mainControlKeys.includes(event.key)) {
       return;
@@ -651,12 +680,13 @@ function createCodigoField(value = "") {
   });
 
   qtyInput.addEventListener("input", () => {
-    qtyInput.value = formatCantidad(qtyInput.value);
+    qtyInput.value = formatCantidadEditable(qtyInput.value);
   });
 
-  qtyInput.addEventListener("blur", () => {
-    qtyInput.value = formatCantidad(qtyInput.value);
-  });
+  qtyInput.addEventListener("focus", clearDefaultQty);
+  qtyInput.addEventListener("click", clearDefaultQty);
+  qtyInput.addEventListener("blur", restoreDefaultQty);
+  qtyInput.addEventListener("focusout", restoreDefaultQty);
 
   attachCodigoAutocomplete(input, hiddenCodigoInput, suggestions);
   main.append(input, hiddenCodigoInput, suggestions);
@@ -984,6 +1014,22 @@ if (facturaInput) {
 }
 
 if (telefonoInput) {
+  const seedPhonePrefix = () => {
+    telefonoInput.value = telefonoInput.value.trim()
+      ? formatMainPhone(telefonoInput.value)
+      : mainPhonePrefix;
+
+    window.setTimeout(() => {
+      telefonoInput.setSelectionRange(telefonoInput.value.length, telefonoInput.value.length);
+    }, 0);
+  };
+
+  const clearEmptyPhonePrefix = () => {
+    if (telefonoInput.value.replace(/\D/g, "") === mainPhonePrefix) {
+      telefonoInput.value = "";
+    }
+  };
+
   telefonoInput.addEventListener("keydown", (event) => {
     if (event.ctrlKey || event.metaKey || mainControlKeys.includes(event.key)) {
       return;
@@ -995,12 +1041,13 @@ if (telefonoInput) {
   });
 
   telefonoInput.addEventListener("input", () => {
-    telefonoInput.value = formatMainPhone(telefonoInput.value);
+    telefonoInput.value = formatMainPhone(telefonoInput.value, document.activeElement === telefonoInput);
   });
 
-  telefonoInput.addEventListener("focus", () => {
-    telefonoInput.value = formatMainPhone(telefonoInput.value);
-  });
+  telefonoInput.addEventListener("focus", seedPhonePrefix);
+  telefonoInput.addEventListener("click", seedPhonePrefix);
+  telefonoInput.addEventListener("blur", clearEmptyPhonePrefix);
+  telefonoInput.addEventListener("focusout", clearEmptyPhonePrefix);
 }
 
 if (nombreInput) {
