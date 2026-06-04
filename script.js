@@ -21,7 +21,6 @@ const nombreInput = form ? form.querySelector('input[name="nombre"]') : null;
 const telefonoInput = form ? form.querySelector('input[name="telefono"]') : null;
 const facturaInput = form ? form.querySelector('input[name="factura"]') : null;
 const facturaFotoInput = form ? form.querySelector('input[name="factura_foto"]') : null;
-const localInput = form ? form.querySelector('input[name="local_compra"]') : null;
 const flyersRail = document.querySelector("[data-flyers-rail]");
 const flyersTrack = document.querySelector("[data-flyers-track]");
 const localesRail = document.querySelector("[data-locales-rail]");
@@ -120,14 +119,6 @@ function closeSuccessModal() {
 function sanitizeMainUppercaseText(value) {
   return value
     .replace(/[^\p{L}\s]/gu, "")
-    .replace(/\s{2,}/g, " ")
-    .trimStart()
-    .toUpperCase();
-}
-
-function sanitizeLocalName(value) {
-  return value
-    .replace(/[^\p{L}\p{N}\s.,&'/-]/gu, "")
     .replace(/\s{2,}/g, " ")
     .trimStart()
     .toUpperCase();
@@ -994,12 +985,6 @@ if (nombreInput) {
   });
 }
 
-if (localInput) {
-  localInput.addEventListener("input", () => {
-    localInput.value = sanitizeLocalName(localInput.value);
-  });
-}
-
 initializeMainTicketFields();
 resetCodigoFields();
 setupLocalLogos().then(setupLocalesRail);
@@ -1025,14 +1010,12 @@ if (form) {
     const telefono = formatMainPhone(form.telefono.value.trim());
     const factura = formatFactura(form.factura.value.trim());
     const facturaFoto = facturaFotoInput ? facturaFotoInput.files[0] : null;
-    const local_compra = sanitizeLocalName(form.local_compra.value.trim());
     const cedulaNumero = Number(cedula.replace(/\D/g, ""));
 
     form.cedula.value = cedula;
     form.nombre.value = nombre;
     form.telefono.value = telefono;
     form.factura.value = factura;
-    form.local_compra.value = local_compra;
 
     if (cedulaNumero < 100000 || cedulaNumero > 15000000) {
       setMessage("La cédula debe estar entre 100.000 y 15.000.000.", "error");
@@ -1055,12 +1038,6 @@ if (form) {
     if (!/^\d{7}$/.test(factura)) {
       setMessage("La factura debe tener exactamente 7 números.", "error");
       form.factura.focus();
-      return;
-    }
-
-    if (!local_compra) {
-      setMessage("Ingresa el nombre del local.", "error");
-      form.local_compra.focus();
       return;
     }
 
@@ -1141,7 +1118,6 @@ if (form) {
           nombre,
           telefono,
           factura,
-          local_compra,
           codigo,
           factura_foto_path: facturaFotoPath
         }))
