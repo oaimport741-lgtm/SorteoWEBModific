@@ -1,3 +1,13 @@
+/*════════════════════════════════════════════════════
+  ⛩  Programmer: Emanuel Barrios  |  侘寂.dev
+
+       ✦  月夜のコード  ✦
+     桜   <code/>  clean · focus · flow   桜
+
+  LinkedIn:
+  https://www.linkedin.com/in/emanuel-barrios-51ab6523b?utm_source=share_via&utm_content=profile&utm_medium=member_android
+════════════════════════════════════════════════════*/
+
 @font-face{
   font-family:"Janda Manatee Solid";
   src:url("JandaManateeSolid.ttf") format("truetype");
@@ -790,6 +800,16 @@ button[type="submit"]:hover{
   }
 }
 
+/*════════════════════════════════════════════════════
+  ⛩  Programmer: Emanuel Barrios  |  侘寂.dev
+
+       ✦  月夜のコード  ✦
+     桜   <code/>  clean · focus · flow   桜
+
+  LinkedIn:
+  https://www.linkedin.com/in/emanuel-barrios-51ab6523b?utm_source=share_via&utm_content=profile&utm_medium=member_android
+════════════════════════════════════════════════════*/
+
 .local-logo-slot{
   flex:0 0 132px;
   width:132px;
@@ -1138,18 +1158,56 @@ button[type="submit"]:hover{
   scroll-margin-top:110px;
 }
 
-.legal-products-list{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:6px 28px;
-  padding-left:20px;
+.legal-products-table-wrap{
+  width:100%;
+  margin-top:14px;
+  overflow-x:auto;
+  border:1px solid rgba(126,65,145,0.18);
+  border-radius:16px;
+  background:rgba(255,255,255,0.78);
+  box-shadow:0 8px 22px rgba(38,34,37,0.08);
+  -webkit-overflow-scrolling:touch;
 }
 
-.legal-products-list li{
-  margin:0;
+.legal-products-table{
+  width:100%;
+  min-width:820px;
+  border-collapse:collapse;
+  font-family:var(--font-readable);
   color:var(--muted);
+}
+
+.legal-products-table th,
+.legal-products-table td{
+  padding:10px 14px;
+  border-bottom:1px solid rgba(38,34,37,0.08);
   font-size:0.9rem;
-  line-height:1.45;
+  line-height:1.2;
+  text-align:left;
+  white-space:nowrap;
+  word-break:keep-all;
+  overflow-wrap:normal;
+}
+
+.legal-products-table th{
+  background:rgba(126,65,145,0.12);
+  color:var(--title-fill);
+  font-weight:800;
+}
+
+.legal-products-table th:last-child,
+.legal-products-table td:last-child{
+  width:170px;
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+
+.legal-products-table tbody tr:nth-child(even){
+  background:rgba(255,255,255,0.45);
+}
+
+.legal-products-table tbody tr:last-child td{
+  border-bottom:none;
 }
 
 .legal-note{
@@ -1755,6 +1813,38 @@ button[type="submit"]:hover{
     margin-top:18px;
     gap:14px;
   }
+
+  .legal-products-table-wrap{
+    overflow-x:hidden;
+    display:flex;
+    justify-content:center;
+  }
+
+  .legal-products-table{
+    width:max-content;
+    max-width:100%;
+    min-width:0;
+    table-layout:auto;
+  }
+
+  .legal-products-table th,
+  .legal-products-table td{
+    font-family:"Arial Narrow",Arial,Helvetica,sans-serif;
+    overflow:visible;
+    text-overflow:clip;
+  }
+
+  .legal-products-table th:first-child,
+  .legal-products-table td:first-child{
+    width:auto;
+  }
+
+  .legal-products-table th:last-child,
+  .legal-products-table td:last-child{
+    width:auto;
+    padding-left:10px;
+    text-align:left;
+  }
 }
 
 @media (max-width:560px){
@@ -1988,14 +2078,44 @@ button[type="submit"]:hover{
     gap:4px;
   }
 
-  .legal-products-list{
-    grid-template-columns:1fr;
-    gap:4px;
+  .legal-products-table-wrap{
+    margin-top:10px;
+    margin-left:-16px;
+    margin-right:-16px;
+    width:calc(100% + 32px);
+    border-radius:12px;
+    overflow-x:hidden;
+    display:flex;
+    justify-content:center;
   }
 
-  .legal-products-list li{
-    font-size:0.9rem;
-    line-height:1.5;
+  .legal-products-table{
+    width:max-content;
+    max-width:100%;
+    min-width:0;
+    table-layout:auto;
+  }
+
+  .legal-products-table th,
+  .legal-products-table td{
+    padding:6px 3px;
+    font-size:clamp(0.48rem,2.5vw,0.72rem);
+    line-height:1.2;
+    overflow:visible;
+    text-overflow:clip;
+  }
+
+  .legal-products-table th:first-child,
+  .legal-products-table td:first-child{
+    width:auto;
+  }
+
+  .legal-products-table th:last-child,
+  .legal-products-table td:last-child{
+    width:auto;
+    padding-left:6px;
+    text-align:left;
+    font-size:clamp(0.43rem,2.2vw,0.62rem);
   }
 
   .legal-note{

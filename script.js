@@ -1,3 +1,13 @@
+/*════════════════════════════════════════════════════
+  ⛩  Programmer: Emanuel Barrios  |  侘寂.dev
+
+       ✦  月夜のコード  ✦
+     桜   <code/>  clean · focus · flow   桜
+
+  LinkedIn:
+  https://www.linkedin.com/in/emanuel-barrios-51ab6523b?utm_source=share_via&utm_content=profile&utm_medium=member_android
+════════════════════════════════════════════════════*/
+
 const supabaseUrl = "https://lvxyphkarplslzwapmqg.supabase.co";
 const supabaseKey = "sb_publishable_TN-L5hSlTa-ZsRL55z-2KQ_q5ZVwErB";
 
@@ -419,6 +429,16 @@ function attachCodigoAutocomplete(input, hiddenInput, suggestions) {
     }, 120);
   });
 }
+
+/*════════════════════════════════════════════════════
+  ⛩  Programmer: Emanuel Barrios  |  侘寂.dev
+
+       ✦  月夜のコード  ✦
+     桜   <code/>  clean · focus · flow   桜
+
+  LinkedIn:
+  https://www.linkedin.com/in/emanuel-barrios-51ab6523b?utm_source=share_via&utm_content=profile&utm_medium=member_android
+════════════════════════════════════════════════════*/
 
 function createCodigoField(value = "") {
   const wrapper = document.createElement("div");
