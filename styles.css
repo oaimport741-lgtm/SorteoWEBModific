@@ -1032,6 +1032,36 @@ button[type="submit"]:hover{
   letter-spacing:0;
 }
 
+.legal-heading-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+
+.legal-jump{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:36px;
+  padding:8px 14px;
+  border-radius:12px;
+  background:rgba(126,65,145,0.12);
+  color:var(--title-fill);
+  font-family:var(--font-readable);
+  font-size:0.82rem;
+  font-weight:700;
+  line-height:1;
+  text-decoration:none;
+  transition:background 0.2s ease, transform 0.2s ease;
+}
+
+.legal-jump:hover{
+  background:rgba(126,65,145,0.2);
+  transform:translateY(-1px);
+}
+
 .legal-card .section-copy{
   max-width:none;
   margin:0;
@@ -1102,6 +1132,24 @@ button[type="submit"]:hover{
   grid-template-columns:repeat(2,minmax(0,1fr));
   gap:8px 22px;
   padding-left:20px;
+}
+
+.legal-products{
+  scroll-margin-top:110px;
+}
+
+.legal-products-list{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:6px 28px;
+  padding-left:20px;
+}
+
+.legal-products-list li{
+  margin:0;
+  color:var(--muted);
+  font-size:0.9rem;
+  line-height:1.45;
 }
 
 .legal-note{
@@ -1904,6 +1952,18 @@ button[type="submit"]:hover{
     font-size:clamp(1.65rem,8vw,2.25rem);
   }
 
+  .legal-heading-row{
+    align-items:flex-start;
+    flex-direction:column;
+    gap:8px;
+  }
+
+  .legal-jump{
+    min-height:34px;
+    padding:8px 12px;
+    font-size:0.78rem;
+  }
+
   .legal-subtitle{
     font-size:0.98rem;
   }
@@ -1926,6 +1986,16 @@ button[type="submit"]:hover{
   .legal-list--prizes{
     grid-template-columns:1fr;
     gap:4px;
+  }
+
+  .legal-products-list{
+    grid-template-columns:1fr;
+    gap:4px;
+  }
+
+  .legal-products-list li{
+    font-size:0.9rem;
+    line-height:1.5;
   }
 
   .legal-note{
