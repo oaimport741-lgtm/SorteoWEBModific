@@ -22,20 +22,19 @@ const telefonoInput = form ? form.querySelector('input[name="telefono"]') : null
 const facturaInput = form ? form.querySelector('input[name="factura"]') : null;
 const facturaFotoInput = form ? form.querySelector('input[name="factura_foto"]') : null;
 const localInput = form ? form.querySelector('input[name="local_compra"]') : null;
-const localSuggestions = document.getElementById("localSuggestions");
 const flyersRail = document.querySelector("[data-flyers-rail]");
 const flyersTrack = document.querySelector("[data-flyers-track]");
+const localesRail = document.querySelector("[data-locales-rail]");
+const localesTrack = document.querySelector("[data-locales-track]");
 const localLogoImages = Array.from(document.querySelectorAll(".local-logo-slot img"));
 
 let supabaseClient = null;
 let productosPermitidos = [];
 let codigosPermitidos = new Set();
 let productosPermitidosCargados = false;
-let localesAdheridos = [];
-let localesAdheridosPermitidos = new Set();
-let localesAdheridosCargados = false;
 let flyersAutoScrollId = null;
 let flyersIsDragging = false;
+let localesAutoScrollId = null;
 let successModalTimer = null;
 const mainControlKeys = [
   "Backspace",
@@ -430,197 +429,6 @@ function attachCodigoAutocomplete(input, hiddenInput, suggestions) {
   });
 }
 
-function getLocalNombre(row) {
-  return String(
-    row?.Nombre ??
-    row?.nombre ??
-    row?.Local ??
-    row?.local ??
-    row?.["Nombre"] ??
-    row?.["nombre"] ??
-    row?.["Local"] ??
-    row?.["local"] ??
-    row?.["Nombre del Local"] ??
-    row?.["Nombre del local"] ??
-    row?.["Local Adherido"] ??
-    row?.["local_adherido"] ??
-    ""
-  ).trim();
-}
-
-function buildLocalAdherido(row) {
-  const activo = row?.Activo ?? row?.activo ?? row?.["Activo"] ?? row?.["activo"];
-
-  if (activo === false) {
-    return null;
-  }
-
-  const nombre = sanitizeLocalName(getLocalNombre(row));
-
-  if (!nombre) {
-    return null;
-  }
-
-  return { nombre };
-}
-
-async function loadLocalesAdheridos() {
-  if (!supabaseClient) {
-    return;
-  }
-
-  try {
-    let from = 0;
-    const size = 1000;
-    const rows = [];
-
-    while (true) {
-      const { data, error } = await supabaseClient
-        .from("Locales Adheridos")
-        .select("*")
-        .range(from, from + size - 1);
-
-      if (error) {
-        throw error;
-      }
-
-      if (!data || !data.length) {
-        break;
-      }
-
-      rows.push(...data);
-
-      if (data.length < size) {
-        break;
-      }
-
-      from += size;
-    }
-
-    const uniqueLocales = new Map();
-
-    rows
-      .map(buildLocalAdherido)
-      .filter(Boolean)
-      .forEach((item) => {
-        uniqueLocales.set(normalizeSearchText(item.nombre), item);
-      });
-
-    localesAdheridos = Array.from(uniqueLocales.values()).sort((a, b) => a.nombre.localeCompare(b.nombre));
-    localesAdheridosPermitidos = new Set(localesAdheridos.map((item) => normalizeSearchText(item.nombre)));
-    localesAdheridosCargados = true;
-  } catch (error) {
-    console.error("Error al cargar locales adheridos:", error);
-    localesAdheridos = [];
-    localesAdheridosPermitidos = new Set();
-    localesAdheridosCargados = false;
-  }
-}
-
-function filterLocalesAdheridos(query) {
-  const normalized = normalizeSearchText(query);
-
-  if (!normalized || !localesAdheridos.length) {
-    return [];
-  }
-
-  const starts = [];
-  const contains = [];
-
-  for (const item of localesAdheridos) {
-    const nombre = normalizeSearchText(item.nombre);
-
-    if (nombre.startsWith(normalized)) {
-      starts.push(item);
-    } else if (nombre.includes(normalized)) {
-      contains.push(item);
-    }
-
-    if (starts.length + contains.length >= 8) {
-      break;
-    }
-  }
-
-  return [...starts, ...contains].slice(0, 8);
-}
-
-function renderLocalSuggestions() {
-  if (!localInput || !localSuggestions) {
-    return;
-  }
-
-  const matches = filterLocalesAdheridos(localInput.value);
-
-  if (!matches.length) {
-    hideCodigoSuggestions(localSuggestions);
-    return;
-  }
-
-  localSuggestions.innerHTML = "";
-
-  matches.forEach((item) => {
-    const option = document.createElement("button");
-    option.type = "button";
-    option.className = "codigo-suggestion";
-
-    const name = document.createElement("span");
-    name.className = "codigo-suggestion__code";
-    name.textContent = item.nombre;
-
-    option.append(name);
-
-    option.addEventListener("mousedown", (event) => {
-      event.preventDefault();
-    });
-
-    option.addEventListener("click", () => {
-      localInput.value = item.nombre;
-      localInput.dataset.selectedLocal = item.nombre;
-      hideCodigoSuggestions(localSuggestions);
-      localInput.focus();
-    });
-
-    localSuggestions.appendChild(option);
-  });
-
-  localSuggestions.hidden = false;
-}
-
-function attachLocalAutocomplete() {
-  if (!localInput || !localSuggestions) {
-    return;
-  }
-
-  localInput.addEventListener("input", () => {
-    localInput.value = sanitizeLocalName(localInput.value);
-
-    if (localInput.value.trim() !== (localInput.dataset.selectedLocal || "")) {
-      delete localInput.dataset.selectedLocal;
-    }
-
-    if (!localesAdheridosCargados) {
-      hideCodigoSuggestions(localSuggestions);
-      return;
-    }
-
-    renderLocalSuggestions();
-  });
-
-  localInput.addEventListener("focus", () => {
-    if (!localesAdheridosCargados || !localInput.value.trim()) {
-      return;
-    }
-
-    renderLocalSuggestions();
-  });
-
-  localInput.addEventListener("blur", () => {
-    window.setTimeout(() => {
-      hideCodigoSuggestions(localSuggestions);
-    }, 120);
-  });
-}
-
 function createCodigoField(value = "") {
   const wrapper = document.createElement("div");
   wrapper.className = "codigo-field";
@@ -634,9 +442,9 @@ function createCodigoField(value = "") {
   const input = document.createElement("input");
   input.type = "text";
   input.name = "producto[]";
-  input.placeholder = "Producto comprado";
+  input.placeholder = "Código de barras de tu producto";
   input.autocomplete = "off";
-  input.setAttribute("aria-label", "Producto comprado");
+  input.setAttribute("aria-label", "Código de barras de tu producto");
   input.required = true;
 
   const hiddenCodigoInput = document.createElement("input");
@@ -784,12 +592,12 @@ async function uploadFacturaFoto(file, { cedula, factura }) {
 
 function setupLocalLogos() {
   if (!localLogoImages.length) {
-    return;
+    return Promise.resolve();
   }
 
   const extensions = ["png", "webp", "jpg", "jpeg", "svg"];
 
-  localLogoImages.forEach((img, index) => {
+  return Promise.all(localLogoImages.map((img, index) => new Promise((resolve) => {
     const slot = img.closest(".local-logo-slot");
     const logoIndex = img.dataset.logoIndex || String(index + 1);
     const explicitSrc = img.getAttribute("src") || "";
@@ -799,57 +607,188 @@ function setupLocalLogos() {
       ...extensions.map((extension) => `local${logoIndex}.${extension}`)
     ].filter((candidate, candidateIndex, list) => candidate && list.indexOf(candidate) === candidateIndex);
 
-    let nextCandidateIndex = explicitSrc ? 1 : 0;
+    let settled = false;
+    let pending = candidates.length;
 
-    const hideSlot = () => {
-      if (slot) {
-        slot.hidden = true;
-        slot.classList.remove("is-loaded");
+    const finish = () => {
+      if (!settled) {
+        settled = true;
+        resolve();
       }
     };
 
-    const showSlot = () => {
+    const showEmptySlot = () => {
       if (slot) {
         slot.hidden = false;
+        slot.classList.remove("is-loaded");
+        slot.classList.add("is-empty");
+      }
+
+      img.hidden = true;
+      img.removeAttribute("src");
+      finish();
+    };
+
+    const showSlot = (src) => {
+      if (slot) {
+        slot.hidden = false;
+        slot.classList.remove("is-empty");
         slot.classList.add("is-loaded");
       }
+
+      img.hidden = false;
+      img.src = src;
+      finish();
     };
 
-    const tryNextCandidate = () => {
-      const candidate = candidates[nextCandidateIndex];
-      nextCandidateIndex += 1;
-
-      if (!candidate) {
-        hideSlot();
-        return;
+    const handleCandidateError = () => {
+      pending -= 1;
+      if (pending <= 0) {
+        showEmptySlot();
       }
-
-      if (slot) {
-        slot.hidden = false;
-        slot.classList.remove("is-loaded");
-      }
-
-      img.src = candidate;
     };
 
-    img.addEventListener("load", () => {
-      if (img.naturalWidth > 0) {
-        showSlot();
-      } else {
-        tryNextCandidate();
-      }
-    });
-
-    img.addEventListener("error", tryNextCandidate);
-
-    if (img.complete) {
-      if (img.naturalWidth > 0) {
-        showSlot();
-      } else {
-        tryNextCandidate();
-      }
+    if (slot) {
+      slot.hidden = false;
+      slot.classList.remove("is-loaded");
+      slot.classList.remove("is-empty");
     }
-  });
+
+    if (!candidates.length) {
+      showEmptySlot();
+      return;
+    }
+
+    candidates.forEach((candidate) => {
+      const probe = new Image();
+
+      probe.addEventListener("load", () => {
+        if (!settled && probe.naturalWidth > 0) {
+          showSlot(candidate);
+        } else if (!settled) {
+          handleCandidateError();
+        }
+      });
+
+      probe.addEventListener("error", () => {
+        if (!settled) {
+          handleCandidateError();
+        }
+      });
+
+      probe.src = candidate;
+    });
+  })));
+}
+
+function setupLocalesRail() {
+  if (!localesRail || !localesTrack) {
+    return;
+  }
+
+  const cards = Array.from(localesTrack.children).filter((card) =>
+    card.classList.contains("local-logo-slot") && !card.hidden
+  );
+
+  if (!cards.length) {
+    localesRail.hidden = true;
+    return;
+  }
+
+  localesTrack.innerHTML = "";
+  localesRail.hidden = false;
+
+  const row = document.createElement("div");
+  const track = document.createElement("div");
+
+  row.className = "locales-row";
+  track.className = "locales-row-track";
+  row.appendChild(track);
+  localesTrack.appendChild(row);
+
+  const appendClones = (set) => {
+    cards.forEach((card) => {
+      const clone = card.cloneNode(true);
+      clone.setAttribute("aria-hidden", "true");
+      clone.dataset.carouselSet = set;
+      track.appendChild(clone);
+    });
+  };
+
+  appendClones("before");
+  cards.forEach((card) => track.appendChild(card));
+  appendClones("after");
+
+  let sequenceStart = 0;
+  let sequenceEnd = 0;
+  let sequenceWidth = 0;
+
+  const measureCarousel = () => {
+    const firstOriginal = track.children[cards.length];
+    const firstAfterClone = track.children[cards.length * 2];
+
+    sequenceStart = firstOriginal ? firstOriginal.offsetLeft : 0;
+    sequenceEnd = firstAfterClone ? firstAfterClone.offsetLeft : 0;
+    sequenceWidth = sequenceEnd - sequenceStart;
+
+    if (sequenceWidth > 0 && localesRail.scrollLeft < sequenceStart) {
+      localesRail.scrollLeft = sequenceStart;
+    }
+
+    if (sequenceWidth > 0) {
+      track.style.setProperty("--locales-loop-distance", `${sequenceWidth}px`);
+    }
+  };
+
+  const normalizeScroll = () => {
+    if (sequenceWidth <= 0) {
+      return;
+    }
+
+    let nextScrollLeft = localesRail.scrollLeft;
+
+    while (nextScrollLeft >= sequenceEnd) {
+      nextScrollLeft -= sequenceWidth;
+    }
+
+    while (nextScrollLeft < sequenceStart) {
+      nextScrollLeft += sequenceWidth;
+    }
+
+    if (nextScrollLeft !== localesRail.scrollLeft) {
+      localesRail.scrollLeft = nextScrollLeft;
+    }
+  };
+
+  const handleResize = () => {
+    measureCarousel();
+    normalizeScroll();
+  };
+
+  const startedAt = performance.now();
+  const updatePosition = () => {
+    if (sequenceWidth <= 0) {
+      return;
+    }
+
+    normalizeScroll();
+
+    const elapsed = performance.now() - startedAt;
+    const offset = (elapsed * 0.035) % sequenceWidth;
+    track.style.transform = `translate3d(${-offset}px,0,0)`;
+  };
+
+  if (localesAutoScrollId !== null) {
+    window.clearInterval(localesAutoScrollId);
+  }
+
+  measureCarousel();
+  normalizeScroll();
+  updatePosition();
+
+  localesRail.addEventListener("scroll", normalizeScroll, { passive: true });
+  window.addEventListener("resize", handleResize, { passive: true });
+  localesAutoScrollId = window.setInterval(updatePosition, 16);
 }
 
 function setupFlyersRail() {
@@ -974,7 +913,6 @@ if (form) {
     });
 
     loadProductosPermitidos();
-    loadLocalesAdheridos();
   } catch (error) {
     console.error("Error al iniciar Supabase:", error);
     setMessage("No se pudo iniciar la conexión con Supabase.", "error");
@@ -1056,11 +994,15 @@ if (nombreInput) {
   });
 }
 
-attachLocalAutocomplete();
+if (localInput) {
+  localInput.addEventListener("input", () => {
+    localInput.value = sanitizeLocalName(localInput.value);
+  });
+}
 
 initializeMainTicketFields();
 resetCodigoFields();
-setupLocalLogos();
+setupLocalLogos().then(setupLocalesRail);
 setupFlyersRail();
 
 if (agregarBtn && contenedorCodigos) {
@@ -1118,18 +1060,6 @@ if (form) {
 
     if (!local_compra) {
       setMessage("Ingresa el nombre del local.", "error");
-      form.local_compra.focus();
-      return;
-    }
-
-    if (!localesAdheridosCargados) {
-      setMessage("No se pudo cargar la lista de locales adheridos.", "error");
-      form.local_compra.focus();
-      return;
-    }
-
-    if (!localesAdheridosPermitidos.has(normalizeSearchText(local_compra))) {
-      setMessage("Selecciona un local de la lista.", "error");
       form.local_compra.focus();
       return;
     }
