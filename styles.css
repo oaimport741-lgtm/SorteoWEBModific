@@ -1218,6 +1218,47 @@ button[type="submit"]:hover{
   color:var(--muted);
 }
 
+.legal-image-section{
+  padding-top:56px;
+}
+
+.legal-card--image{
+  max-width:920px;
+  padding:28px 22px 34px;
+  background:rgba(255,255,255,0.72);
+}
+
+.legal-heading-row--image{
+  max-width:760px;
+  margin:0 auto 18px;
+}
+
+.legal-image-frame{
+  position:relative;
+  max-width:760px;
+  margin:0 auto;
+  overflow:hidden;
+  border-radius:34px;
+  background:#f8eee9;
+  box-shadow:0 18px 42px rgba(38,34,37,0.12);
+}
+
+.legal-bases-image{
+  width:100%;
+  height:auto;
+  display:block;
+}
+
+.legal-image-anchor{
+  position:absolute;
+  left:0;
+  top:62.75%;
+  width:1px;
+  height:1px;
+  scroll-margin-top:98px;
+  pointer-events:none;
+}
+
 .contact-section{
   padding:24px 20px 22px;
   min-height:calc(100vh - 100px);
@@ -2038,6 +2079,10 @@ button[type="submit"]:hover{
     border-radius:24px;
   }
 
+  .legal-card--image{
+    padding:18px 8px 24px;
+  }
+
   .page-bases .legal-card h1{
     font-size:clamp(1.65rem,8vw,2.25rem);
   }
@@ -2052,6 +2097,19 @@ button[type="submit"]:hover{
     min-height:34px;
     padding:8px 12px;
     font-size:0.78rem;
+  }
+
+  .legal-heading-row--image{
+    padding:0 8px;
+    margin-bottom:14px;
+  }
+
+  .legal-image-frame{
+    border-radius:28px;
+  }
+
+  .legal-image-anchor{
+    scroll-margin-top:86px;
   }
 
   .legal-subtitle{
