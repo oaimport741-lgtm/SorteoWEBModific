@@ -17,7 +17,7 @@
 <title>OA Import - Sorteo</title>
 <link rel="icon" href="favicon.ico?v=6" sizes="any">
 <link rel="shortcut icon" href="favicon.ico?v=6" type="image/x-icon">
-<link rel="stylesheet" href="styles.css?v=69">
+<link rel="stylesheet" href="styles.css?v=73">
 </head>
 <body class="page-home">
 
@@ -126,6 +126,7 @@
 <h2>Participar</h2>
 
 <form id="formularioDatos">
+<button type="button" id="promoFormGuard" class="promo-form-guard" hidden aria-label="Ver aviso de inicio de promocion"></button>
 <div class="fila">
 <input type="text" name="cedula" placeholder="Nro de cédula" autocomplete="off" inputmode="numeric" maxlength="10" aria-label="Número de cédula" required>
 <input type="text" name="nombre" placeholder="Nombre" autocomplete="name" autocapitalize="characters" spellcheck="false" aria-label="Nombre" required>
@@ -179,12 +180,20 @@
 <div id="promoWaitModal" class="promo-wait-modal" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-label="Aviso de inicio de promocion">
 <div class="promo-wait-modal__dialog">
 <button type="button" id="promoWaitClose" class="promo-wait-modal__close" aria-label="Cerrar aviso">x</button>
-<img src="aviso-promo-empieza-22-06-2026.png?v=1" class="promo-wait-modal__image" alt="Nos encanta tu entusiasmo, pero te pedimos un poquito de paciencia. La promo empieza el 22/06/2026. Te esperamos nuevamente. Muchas gracias.">
+<img src="aviso-promo-empieza-22-06-2026.png?v=2" class="promo-wait-modal__image" alt="Nos encanta tu entusiasmo, pero te pedimos un poquito de paciencia. La promo empieza el 22/06/2026. Te esperamos nuevamente. Muchas gracias.">
+<div class="promo-wait-card" hidden>
+<p class="promo-wait-card__eyebrow">Promo D&iacute;a del Ni&ntilde;o</p>
+<h2>&iexcl;Un poquito de paciencia!</h2>
+<p>Nos encanta tu entusiasmo, pero te pedimos un poquito de paciencia.</p>
+<p class="promo-wait-card__date">22/06/2026</p>
+<p>La promo empieza a las 00:01 hs.</p>
+<strong>&iexcl;Te esperamos nuevamente! &iexcl;Muchas Gracias!</strong>
+</div>
 </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="script.js?v=25"></script>
+<script src="script.js?v=28"></script>
 </body>
 <!--
 /*════════════════════════════════════════════════════

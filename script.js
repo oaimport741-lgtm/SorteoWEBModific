@@ -12,6 +12,7 @@ const supabaseUrl = "https://lvxyphkarplslzwapmqg.supabase.co";
 const supabaseKey = "sb_publishable_TN-L5hSlTa-ZsRL55z-2KQ_q5ZVwErB";
 
 const form = document.getElementById("formularioDatos");
+const promoFormGuard = document.getElementById("promoFormGuard");
 const agregarBtn = document.getElementById("agregarCodigo");
 const contenedorCodigos = document.getElementById("codigos");
 const loader = document.getElementById("loader");
@@ -23,6 +24,8 @@ const successModal = document.getElementById("successModal");
 const successModalClose = document.getElementById("successModalClose");
 const promoWaitModal = document.getElementById("promoWaitModal");
 const promoWaitClose = document.getElementById("promoWaitClose");
+const promoWaitImage = document.querySelector(".promo-wait-modal__image");
+const promoWaitFallback = document.querySelector(".promo-wait-card");
 const contactForm = document.getElementById("contactoForm");
 const contactNameInput = document.getElementById("contactoNombre");
 const contactPhoneInput = document.getElementById("contactoTelefono");
@@ -47,6 +50,7 @@ let flyersAutoScrollId = null;
 let flyersIsDragging = false;
 let localesAutoScrollId = null;
 let successModalTimer = null;
+let promoWaitHistoryActive = false;
 const mainControlKeys = [
   "Backspace",
   "Delete",
@@ -138,18 +142,60 @@ function openPromoWaitModal() {
     return;
   }
 
+  const wasHidden = promoWaitModal.hidden;
+
   closeSuccessModal();
   promoWaitModal.hidden = false;
   promoWaitModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("promo-wait-open");
+
+  if (wasHidden && !promoWaitHistoryActive && window.history && typeof window.history.pushState === "function") {
+    window.history.pushState({ promoWaitModal: true }, "", window.location.href);
+    promoWaitHistoryActive = true;
+  }
 }
 
-function closePromoWaitModal() {
+function closePromoWaitModal(options = {}) {
   if (!promoWaitModal) {
     return;
   }
 
+  const { syncHistory = true } = options;
+
   promoWaitModal.hidden = true;
   promoWaitModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("promo-wait-open");
+
+  if (syncHistory && promoWaitHistoryActive && window.history && window.history.state && window.history.state.promoWaitModal) {
+    promoWaitHistoryActive = false;
+    window.history.back();
+    return;
+  }
+
+  promoWaitHistoryActive = false;
+}
+
+function setPromoWaitFallback(useFallback) {
+  if (promoWaitImage) {
+    promoWaitImage.hidden = useFallback;
+  }
+
+  if (promoWaitFallback) {
+    promoWaitFallback.hidden = !useFallback;
+  }
+}
+
+function setupPromoWaitImage() {
+  if (!promoWaitImage || !promoWaitFallback) {
+    return;
+  }
+
+  promoWaitImage.addEventListener("load", () => setPromoWaitFallback(false));
+  promoWaitImage.addEventListener("error", () => setPromoWaitFallback(true));
+
+  if (promoWaitImage.complete) {
+    setPromoWaitFallback(promoWaitImage.naturalWidth === 0);
+  }
 }
 
 function blockPromoInteraction(event) {
@@ -168,6 +214,22 @@ function blockPromoInteraction(event) {
 
   openPromoWaitModal();
   return true;
+}
+
+function setupPromoFormGuard() {
+  if (!promoFormGuard) {
+    return;
+  }
+
+  promoFormGuard.hidden = !isPromoPending();
+
+  promoFormGuard.addEventListener("click", blockPromoInteraction);
+  promoFormGuard.addEventListener("focus", blockPromoInteraction);
+  promoFormGuard.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      blockPromoInteraction(event);
+    }
+  });
 }
 
 function sanitizeMainUppercaseText(value) {
@@ -1051,6 +1113,8 @@ if (nombreInput) {
 
 initializeMainTicketFields();
 resetCodigoFields();
+setupPromoWaitImage();
+setupPromoFormGuard();
 setupLocalLogos().then(setupLocalesRail);
 setupFlyersRail();
 
@@ -1257,6 +1321,14 @@ if (promoWaitModal && promoWaitClose) {
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !promoWaitModal.hidden) {
       closePromoWaitModal();
+    }
+  });
+
+  window.addEventListener("popstate", () => {
+    if (!promoWaitModal.hidden) {
+      closePromoWaitModal({ syncHistory: false });
+    } else {
+      promoWaitHistoryActive = false;
     }
   });
 }
