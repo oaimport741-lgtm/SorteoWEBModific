@@ -216,6 +216,14 @@ function blockPromoInteraction(event) {
   return true;
 }
 
+function handleFormPromoInteraction(event) {
+  if (promoFormGuard && !promoFormGuard.hidden && event.target === promoFormGuard) {
+    return false;
+  }
+
+  return blockPromoInteraction(event);
+}
+
 function setupPromoFormGuard() {
   if (!promoFormGuard) {
     return;
@@ -223,8 +231,39 @@ function setupPromoFormGuard() {
 
   promoFormGuard.hidden = !isPromoPending();
 
-  promoFormGuard.addEventListener("click", blockPromoInteraction);
-  promoFormGuard.addEventListener("focus", blockPromoInteraction);
+  let startX = 0;
+  let startY = 0;
+  let moved = false;
+  const tapThreshold = 12;
+
+  promoFormGuard.addEventListener("pointerdown", (event) => {
+    startX = event.clientX;
+    startY = event.clientY;
+    moved = false;
+  });
+
+  promoFormGuard.addEventListener("pointermove", (event) => {
+    const deltaX = Math.abs(event.clientX - startX);
+    const deltaY = Math.abs(event.clientY - startY);
+
+    if (deltaX > tapThreshold || deltaY > tapThreshold) {
+      moved = true;
+    }
+  });
+
+  promoFormGuard.addEventListener("pointerup", (event) => {
+    if (moved) {
+      return;
+    }
+
+    blockPromoInteraction(event);
+  });
+
+  promoFormGuard.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+  });
+
   promoFormGuard.addEventListener("keydown", (event) => {
     if (event.key === "Enter" || event.key === " ") {
       blockPromoInteraction(event);
@@ -1119,9 +1158,9 @@ setupLocalLogos().then(setupLocalesRail);
 setupFlyersRail();
 
 if (form) {
-  form.addEventListener("pointerdown", blockPromoInteraction, true);
-  form.addEventListener("click", blockPromoInteraction, true);
-  form.addEventListener("focusin", blockPromoInteraction);
+  form.addEventListener("pointerdown", handleFormPromoInteraction, true);
+  form.addEventListener("click", handleFormPromoInteraction, true);
+  form.addEventListener("focusin", handleFormPromoInteraction);
 }
 
 if (agregarBtn && contenedorCodigos) {

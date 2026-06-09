@@ -499,6 +499,8 @@ nav a[href="index.html#formulario"]:hover{
   border-radius:30px;
   background:transparent;
   cursor:pointer;
+  touch-action:pan-y;
+  -webkit-tap-highlight-color:transparent;
 }
 
 .promo-form-guard[hidden]{
