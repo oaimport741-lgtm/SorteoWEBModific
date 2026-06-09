@@ -21,6 +21,8 @@ const menu = document.getElementById("menu");
 const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
 const successModal = document.getElementById("successModal");
 const successModalClose = document.getElementById("successModalClose");
+const promoWaitModal = document.getElementById("promoWaitModal");
+const promoWaitClose = document.getElementById("promoWaitClose");
 const contactForm = document.getElementById("contactoForm");
 const contactNameInput = document.getElementById("contactoNombre");
 const contactPhoneInput = document.getElementById("contactoTelefono");
@@ -59,6 +61,7 @@ const mainControlKeys = [
 const mainPhonePrefix = "09";
 const facturaStorageBucket = "facturas";
 const facturaMaxFileSize = 8 * 1024 * 1024;
+const promoStartAt = new Date(2026, 5, 22, 0, 1, 0);
 
 function setMessage(texto, tipo = "") {
   if (!mensaje) {
@@ -124,6 +127,47 @@ function closeSuccessModal() {
   successModal.hidden = true;
   successModal.setAttribute("aria-hidden", "true");
   document.body.classList.remove("modal-open");
+}
+
+function isPromoPending() {
+  return Date.now() < promoStartAt.getTime();
+}
+
+function openPromoWaitModal() {
+  if (!promoWaitModal) {
+    return;
+  }
+
+  closeSuccessModal();
+  promoWaitModal.hidden = false;
+  promoWaitModal.setAttribute("aria-hidden", "false");
+}
+
+function closePromoWaitModal() {
+  if (!promoWaitModal) {
+    return;
+  }
+
+  promoWaitModal.hidden = true;
+  promoWaitModal.setAttribute("aria-hidden", "true");
+}
+
+function blockPromoInteraction(event) {
+  if (!isPromoPending()) {
+    return false;
+  }
+
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  if (document.activeElement && form && form.contains(document.activeElement) && typeof document.activeElement.blur === "function") {
+    document.activeElement.blur();
+  }
+
+  openPromoWaitModal();
+  return true;
 }
 
 function sanitizeMainUppercaseText(value) {
@@ -1010,6 +1054,12 @@ resetCodigoFields();
 setupLocalLogos().then(setupLocalesRail);
 setupFlyersRail();
 
+if (form) {
+  form.addEventListener("pointerdown", blockPromoInteraction, true);
+  form.addEventListener("click", blockPromoInteraction, true);
+  form.addEventListener("focusin", blockPromoInteraction);
+}
+
 if (agregarBtn && contenedorCodigos) {
   agregarBtn.addEventListener("click", () => {
     contenedorCodigos.appendChild(createCodigoField());
@@ -1019,6 +1069,10 @@ if (agregarBtn && contenedorCodigos) {
 if (form) {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
+
+    if (blockPromoInteraction(event)) {
+      return;
+    }
 
     if (!supabaseClient) {
       setMessage("No se pudo conectar con Supabase.", "error");
@@ -1187,6 +1241,22 @@ if (successModal && successModalClose) {
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !successModal.hidden) {
       closeSuccessModal();
+    }
+  });
+}
+
+if (promoWaitModal && promoWaitClose) {
+  promoWaitClose.addEventListener("click", closePromoWaitModal);
+
+  promoWaitModal.addEventListener("click", (event) => {
+    if (event.target === promoWaitModal) {
+      closePromoWaitModal();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !promoWaitModal.hidden) {
+      closePromoWaitModal();
     }
   });
 }
